@@ -33,7 +33,7 @@ class User(AbstractBaseUser):
         hasedpassword = make_password(password)
         print(userrole)
         if userrole == "Teacher":
-            newuser = cls.objects.create(email=email,password=hasedpassword,user_role=userrole,assignment_upload=True,answer_upload=False)
+            newuser = cls.objects.create(email=email,password=hasedpassword,user_role=userrole,assignment_upload=True,answer_upload=True)
             newuser.save()
         if userrole == "Student":
             newuser = cls.objects.create(email=email,password=hasedpassword,user_role=userrole,assignment_upload=False,answer_upload=True)
@@ -41,14 +41,14 @@ class User(AbstractBaseUser):
         return True
     
     @classmethod
-    def GetUser(cls,email,password,role):
-        get_student = cls.objects.get(email=email)
-        dcrypted_password = check_password(password,get_student.password)
+    def GetUser(cls,email,password):
+        get_user = cls.objects.get(email=email)
+        dcrypted_password = check_password(password,get_user.password)
         # print(dcrypted_password)
-        if get_student and dcrypted_password:
-            return {'flag':True,'std':get_student}
+        if get_user and dcrypted_password:
+            return {'flag':True,'user':get_user}
         else:
-            return {'flag':False,'std':'No students are there'}
+            return {'flag':False,'user':'No students are there'}
 
 
     def has_perm(self, perm, obj=None):
