@@ -50,6 +50,25 @@ class User(AbstractBaseUser):
         else:
             return {'flag':False,'user':'No students are there'}
 
+    @classmethod
+    def Get_user_email(cls,email):
+        user = cls.objects.get(email=email)
+        if user is not None:
+            return user
+        else:
+            return False
+    
+    @classmethod
+    def Change_Password(cls,email,password):
+        hasedpassword = make_password(password)
+        getuser = cls.Get_user_email(email=email)
+        if getuser != False:
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE user_user SET password = %s WHERE email = %s',[hasedpassword,getuser.email])
+                row = cursor.close()
+            return True
+        else:
+            return False
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"

@@ -1,3 +1,4 @@
+import configparser
 from dataclasses import fields
 from rest_framework import serializers
 from .models import User
@@ -20,6 +21,9 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+    class Meta:
+        fields = ['email','password']
+
     def validate_email(self,value):
         with connection.cursor() as cursor:
             cursor.execute('SELECT * FROM user_user WHERE email = %s',[value])
@@ -41,3 +45,31 @@ class LoginSerializer(serializers.Serializer):
             return value
         else:
             raise serializers.ValidationError("Email and Password is  invalid...")
+
+class EmailSerailizer(serializers.Serializer):
+    email = serializers.EmailField()
+    class Meta:
+        fields = ['email']
+
+    def validate_email(self,value):
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT * FROM user_user WHERE email = %s',[value])
+            row = cursor.fetchone()
+        
+        if row is not None:
+            return value
+        else:
+            raise serializers.ValidationError("Email is invalid...")
+
+class PasswordSerializer(serializers.Serializer):
+    newpassword = serializers.CharField(max_length=50)
+
+    class Meta:
+        fields = ["newpassword","confirmpassword"]
+    
+    def validate_newpassword(self,value):
+        confirmpassword = self.context.get("confirmpassword")
+        if value == confirmpassword:
+            return value
+        else:
+            raise serializers.ValidationError("Passwords are not matched")
