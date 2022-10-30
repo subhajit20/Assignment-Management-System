@@ -31,7 +31,6 @@ class User(AbstractBaseUser):
     @classmethod
     def CreateAccount(cls,email,password,userrole):
         hasedpassword = make_password(password)
-        print(userrole)
         if userrole == "Teacher":
             newuser = cls.objects.create(email=email,password=hasedpassword,user_role=userrole,assignment_upload=True,answer_upload=True)
             newuser.save()

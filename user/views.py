@@ -1,3 +1,4 @@
+from turtle import delay
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from user.serializer import RegisterSerailzer,LoginSerializer,EmailSerailizer,PasswordSerializer
@@ -7,9 +8,8 @@ from .lib.JWTTOKENGenerator import get_tokens_for_user
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework.permissions import IsAuthenticated
-from .lib.EmailSend import Sending_Emails
+from .tasks import Sending_Emails,Sending_Emails_For_Reseting_Password
 
-#anertsvxumstqftz
 
 # Registration View
 @api_view(['POST'])
@@ -18,22 +18,19 @@ def Registration(request):
         serializer = RegisterSerailzer(data=request.data)
 
         if serializer.is_valid():
-            print(serializer.data)
             email = serializer.data.get("email")
             password = serializer.data.get("password")
             userrole = serializer.data.get("user_role")
             newuser = User.CreateAccount(email,password,userrole)
-
             if newuser:
-                flag = Sending_Emails(email)
-                if flag == 1:
-                    return Response({'success':'Successfully created account...'},status=status.HTTP_200_OK)
-                else:
-                    return Response({'msg':"Something Went wrong"},status=status.HTTP_404_NOT_FOUND)
+                Sending_Emails.delay(email_handle=email)
+                return Response({'success':'Successfully created account...'},status=status.HTTP_200_OK)
             else:
-                return Response({'error':'Something went wrong...'},status=status.HTTP_400_BAD_REQUEST)
+                return Response({'msg':"Not Found"},status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response({'error':serializer.errors},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error':"Something went wrong..."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -42,13 +39,14 @@ def Login(request):
         serializer = LoginSerializer(data=request.data,context=request.data)
 
         if serializer.is_valid():
-            print(serializer.data)
             email = serializer.data.get("email")
             password = serializer.data.get("password")
-            newuser = User.GetUser(email=email,password=password)
-            if newuser['flag']:
-                print(newuser['user'])
-                return Response({'success':'Successfully created account...',"user":newuser['user'].email},status=status.HTTP_200_OK)
+            user = User.GetUser(email=email,password=password)
+            if user['flag']:
+                print(user)
+                token = get_tokens_for_user(user['user'])
+                print(token)
+                return Response({'success':'Successfully created account...',"user":user['user'].email,"token":token},status=status.HTTP_200_OK)
             else:
                 return Response({'error':'Something went wrong...'},status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -64,10 +62,10 @@ def Request_ResetPassword(request):
             getuseremail = User.Get_user_email(email=useremaill)
             if getuseremail != False:
                 token = get_tokens_for_user(getuseremail)
-                print(token)
-            else:
-                print(getuseremail)
-            return Response({'msg':"An message has been sent to your mail","token":token},status=status.HTTP_200_OK)
+                print(token['access'])
+                reset_password_link = str(f'http://127.0.0.1:8000/user/resetpassword/{token["access"]}')
+                Sending_Emails_For_Reseting_Password.delay(email_handle=useremaill,link=reset_password_link)
+                return Response({'msg':"An message has been sent to your mail"},status=status.HTTP_200_OK)
         else:
             return Response({'error':serializer.errors},status=status.HTTP_404_NOT_FOUND)
 
