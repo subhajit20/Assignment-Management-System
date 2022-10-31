@@ -14,6 +14,8 @@ class RegisterSerailzer(serializers.ModelSerializer):
     def validate_user_role(self,value):
         if value == "Teacher" or value == "Student":
             return value
+        if value is None:
+            raise serializers.ValidationError("Invalid usertype! If You are a student then choose Student or if you are a Teacher then choose Teacher")
         else:
             raise serializers.ValidationError("Invalid usertype! If You are a student then choose Student or if you are a Teacher then choose Teacher")
 
