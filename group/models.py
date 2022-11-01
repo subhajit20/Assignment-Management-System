@@ -1,4 +1,5 @@
 from email.policy import default
+from enum import auto, unique
 from user.models import User
 from django.db import models
 from uuid import uuid4
@@ -42,41 +43,47 @@ class Group(models.Model):
             return None
 
 
-class GroupMember(models.Model):
-    joinId = models.AutoField(primary_key=True,unique=True)
-    groupname = models.ForeignKey(Group,on_delete=models.CASCADE)
-    members = models.ForeignKey(User,on_delete=models.CASCADE)
-    joined = models.DateTimeField(default=now,editable=False)
-    can_upload_answer = models.BooleanField(default=True,editable=False)
-
+class GroupStudentsRecord(models.Model):
+    id = models.AutoField(primary_key=True,unique=True)
+    groupname = models.CharField(max_length=100,editable=True)
+    groupid = models.URLField()
+    studentid = models.IntegerField(editable=True)
+    studentemail = models.EmailField()
+    joiningtime = models.DateTimeField(default=now)
 
     @classmethod
-    def JoiningGroups(cls,group_id,student):
+    def JoinGroup(cls,groupid,student):
         try:
-            if student.user_role == 'Student' and student.answer_upload == True:
-                get_groups = Group.objects.get(groupid=group_id)
-                if get_groups:
-                    try:
-                        add_entry = cls.objects.create()
-                        add_entry.groupname.add(get_groups)
-                        add_entry.members.add(student)
-                        add_entry.save()
+            if student.answer_upload == True and student.user_role == 'Student':
+                check_group_exist = Group.objects.filter(groupid=groupid).values()
+                # print(check_group_exist[0]['groupid'])
+                if len(check_group_exist) > 0:
+                    check_student_already_joined = cls.objects.filter(groupid=check_group_exist[0]['groupid'],studentemail=student.email).values()
+                    if len(check_student_already_joined) > 0:
+                        # print(check_student_already_joined)
+                        return False
+                    else:
+                        print(student)
+                        create_entry = cls.objects.create(
+                            groupname=check_group_exist[0]['group_name'],
+                            groupid=check_group_exist[0]['groupid'],
+                            studentid=student.id,
+                            studentemail=student.email
+                        )
+                        create_entry.save()
                         return True
-                    except Exception as e:
-                        print(e)
-                        return None
                 else:
-                    return None
-            return None
+                    return None 
         except Exception as e:
-            print(e)
             return None
-
     @classmethod
-    def Get_Group_Students(cls):
-        getgroup_members = cls.objects.all().values()
+    def Get_Group_Students(cls,groupid):
+        try:
+            is_group = cls.objects.filter(groupid=groupid).values()
 
-        return getgroup_members
-
-
-
+            if len(is_group) > 0:
+                return is_group
+            else:
+                return None
+        except Exception as e:
+            return None

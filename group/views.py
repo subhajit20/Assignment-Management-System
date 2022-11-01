@@ -1,10 +1,12 @@
+from multiprocessing import context
+from tokenize import group
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from .serializer import GroupSerializer,SearchGroupSerializer
-from .models import Group,GroupMember
+from .serializer import GroupSerializer,SearchGroupSerializer,SearchAllStudentsSerializer
+from .models import Group,GroupStudentsRecord
 from rest_framework import status
 
 # Create your views here.
@@ -44,19 +46,29 @@ def Fetch_Users_Groups(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def Join_Group(request):
-    serializer = SearchGroupSerializer(data=request.data)
+    datas = {
+    'userdata':request.user,
+    'groupid':request.data
+    }
+    serializer = SearchGroupSerializer(data=request.data,context=datas)
     if serializer.is_valid():
         groupid = serializer.data.get('groupid')
-        getgroup = GroupMember.JoiningGroups(groupid,request.user)
-        print(getgroup)
-        return Response({'msg':"Group founded..."})
+        getgroup = GroupStudentsRecord.JoinGroup(groupid,request.user)
+        return Response({'msg':'You have successfully joined the group...'})
     return Response({'msg':serializer.errors})
 
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def Get_all_Students_of_the_Group(request):
-    data = GroupMember.Get_Group_Students()
+    serializer = SearchAllStudentsSerializer(data=request.data)
+    if serializer.is_valid():
+        groupid = serializer.data.get('groupid')
+        groups = GroupStudentsRecord.Get_Group_Students(groupid)
 
-    print(data[1]['groupname'])
-    return Response({'msg':data})
+        if group is not None:
+            return Response({'msg':{'mygroups':groups}})
+        else:
+            return Response({'error':'Something went wrong...'})
+    else:
+        return Response({'msg':serializer.errors})

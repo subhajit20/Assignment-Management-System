@@ -5,5 +5,5 @@ urlpatterns = [
     path('creategroup/',Create_Group ),
     path('getusergroups/',Fetch_Users_Groups ),
     path('groupjoin/',Join_Group ),
-    path('getstudents/',Get_all_Students_of_the_Group ),
+    path('getgroupstudents/',Get_all_Students_of_the_Group ),
 ]
