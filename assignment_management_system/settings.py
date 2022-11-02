@@ -47,11 +47,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
     'group.apps.GroupConfig',
+    'assignment.apps.AssignmentConfig',
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt',
     'celery',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/',
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -63,6 +71,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -111,6 +121,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

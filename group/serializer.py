@@ -35,3 +35,4 @@ class SearchAllStudentsSerializer(serializers.Serializer):
     groupid = serializers.UUIDField()
     class Meta:
         fields = ['groupid']
+

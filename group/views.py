@@ -72,3 +72,24 @@ def Get_all_Students_of_the_Group(request):
             return Response({'error':'Something went wrong...'})
     else:
         return Response({'msg':serializer.errors})
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def Fetch_Joined_Students_Group(request):
+    if request.user is not None:
+        get_joined_groups = GroupStudentsRecord.JoinedGoupLists(request)
+        if get_joined_groups is not None:
+            return Response({
+                'msg':{
+                    'groups':get_joined_groups
+                }
+            },status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'msg':'You have not joined any group yet...'
+            },status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({
+            'error':"You should be logged in..."
+        },status=status.HTTP_401_UNAUTHORIZED)

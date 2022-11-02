@@ -87,3 +87,18 @@ class GroupStudentsRecord(models.Model):
                 return None
         except Exception as e:
             return None
+    
+    @classmethod
+    @classmethod
+    def JoinedGoupLists(cls,student):
+        try:
+            if student.user_role == 'Student' and student.answer_upload == True:
+                get_all_groups = cls.objects.filter(studentemail=student.email).values()
+                if len(get_all_groups) > 0:
+                    return get_all_groups
+                else:
+                    return None
+            else:
+                return None
+        except Exception as e:
+            return None
