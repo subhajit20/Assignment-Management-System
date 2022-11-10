@@ -5,8 +5,8 @@ from group.models import Group
 from django.core.cache import cache
 from django.conf import settings
 from rest_framework import status
-from .serializer import AssignmentSerializer
-from .models import Assignment
+# from .serializer import AssignmentSerializer
+# from .models import Assignment
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 # Create your views here.
 
@@ -46,18 +46,18 @@ def GetallGroup(request):
         'msg':users
         })
 
-@api_view(['POST'])
-def PostAssignment(request):
-    serializer = AssignmentSerializer(data=request.data)
-    if serializer.is_valid():
-        data = {
-        "assignmentName":serializer.data.get("assignmentName"),
-        "assignmentFile":request.FILES['assignmentFile'],
-        }
-        Assignment.CreateAssignment(**data)
-        return Response({
-        'msg':'This assign upload route...'
-        })
-    return Response({
-    'msg':serializer.errors
-    })
+# @api_view(['POST'])
+# def PostAssignment(request):
+#     # serializer = AssignmentSerializer(data=request.data)
+#     if serializer.is_valid():
+#         data = {
+#         "assignmentName":serializer.data.get("assignmentName"),
+#         "assignmentFile":request.FILES['assignmentFile'],
+#         }
+#         # Assignment.CreateAssignment(**data)
+#         return Response({
+#         'msg':'This assign upload route...'
+#         })
+#     return Response({
+#     'msg':serializer.errors
+#     })

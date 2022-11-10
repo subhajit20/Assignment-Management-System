@@ -46,7 +46,7 @@ class Group(models.Model):
 class GroupStudentsRecord(models.Model):
     id = models.AutoField(primary_key=True,unique=True)
     groupname = models.CharField(max_length=100,editable=True)
-    groupid = models.URLField()
+    groupid = models.UUIDField()
     studentid = models.IntegerField(editable=True)
     studentemail = models.EmailField()
     joiningtime = models.DateTimeField(default=now)

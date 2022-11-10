@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import GetAllUser,GetallGroup,PostAssignment
+from .views import GetAllUser,GetallGroup
 urlpatterns = [
     path('home/', GetAllUser),
-    path('groups/', GetallGroup),
-    path('upload/assignment/', PostAssignment),
+    path('groups/', GetallGroup)
+    # path('upload/assignment/', PostAssignment),
 ]
