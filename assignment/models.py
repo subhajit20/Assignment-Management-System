@@ -33,3 +33,20 @@ class Assignment(models.Model):
     upload_time = models.DateTimeField(default=now)
     groupID = models.UUIDField(blank=True)
     submissionTime = models.DateTimeField(blank=True)
+
+    @classmethod
+    def Upload(cls,**assignment):
+        print(assignment)
+        myuser = User.objects.get(email=assignment["user"].email)
+        if myuser is not None:
+            if myuser.user_role == "Teacher":
+                # print(assignment["assignmentName"])
+                # print(assignment["user"])
+                print(datetime.now())
+                newassignment = cls.objects.create(assignmentName=assignment["assignmentName"],assignmentFile=assignment["assignmentFile"],assignmentuser=assignment["user"],groupID=uuid4(),submissionTime=datetime.now())
+                newassignment.save()
+                return True
+            else:
+                return None
+        else:
+            return None

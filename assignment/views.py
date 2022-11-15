@@ -1,12 +1,14 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes,authentication_classes
 from user.models import User
 from group.models import Group
 from django.core.cache import cache
 from django.conf import settings
 from rest_framework import status
-# from .serializer import AssignmentSerializer
-# from .models import Assignment
+from .serializer import AssignmentSerializer
+from .models import Assignment
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 # Create your views here.
 
@@ -46,18 +48,26 @@ def GetallGroup(request):
         'msg':users
         })
 
-# @api_view(['POST'])
-# def PostAssignment(request):
-#     # serializer = AssignmentSerializer(data=request.data)
-#     if serializer.is_valid():
-#         data = {
-#         "assignmentName":serializer.data.get("assignmentName"),
-#         "assignmentFile":request.FILES['assignmentFile'],
-#         }
-#         # Assignment.CreateAssignment(**data)
-#         return Response({
-#         'msg':'This assign upload route...'
-#         })
-#     return Response({
-#     'msg':serializer.errors
-#     })
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def PostAssignment(request):
+    serializer = AssignmentSerializer(data=request.data)
+    if serializer.is_valid():
+        data = {
+        "assignmentName":serializer.data.get("assignmentName"),
+        "assignmentFile":request.FILES['assignmentFile'],
+        "user":request.user
+        }
+        flag = Assignment.Upload(**data)
+        if flag:
+            return Response({
+            'msg':'Assignment is successfully uploded ...'
+            })
+        else:
+            return Response({
+                'msg':'Assignment is not successfully uploded'
+                })
+    return Response({
+    'msg':serializer.errors
+    })
